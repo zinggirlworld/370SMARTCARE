@@ -1,0 +1,36 @@
+/* Keep Vibrant Healthcare v1.3 intact; contain summary cards on tablets. */
+@media (min-width: 741px) and (max-width: 1030px) {
+  .mini-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mini-stat { min-width: 0; flex-wrap: wrap; }
+  .mini-stat > div { min-width: 0; }
+}
+
+/* Compact headers reserve more space for the report without changing branding. */
+.hero.hero-compact { min-height: 0; padding: 20px 28px; }
+.hero-compact .eyebrow { display: none; }
+.hero-compact h1 { font-size: clamp(20px, 2.1vw, 28px); }
+.hero-compact .hero-subtitle { margin: 7px 0 0; font-size: 13px; }
+.hero-compact .hero-tagline { margin-bottom: 0; font-size: 12px; }
+.hero-compact .hero-copy { padding-right: 0; }
+.hero-compact .hero-art { display: none; }
+.kpi .kpi-summary.summary-attention { color: #a91e50; }
+
+.indicator-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; flex-wrap: wrap; }
+.status-filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 5px; background: #edf4fa; border: 1px solid #dce8ef; border-radius: 15px; }
+.status-filters button { min-height: 42px; padding: 8px 15px; border: 1px solid transparent; border-radius: 11px; background: transparent; color: #38546e; font-size: 13px; font-weight: 750; }
+.status-filters button.chosen { background: #fff; color: #076c61; border-color: #a9dbcf; box-shadow: 0 2px 6px #244f6510; }
+.status-filters button:hover { background: #fff; }
+.status-filters button:focus-visible { outline: 3px solid #267bea; outline-offset: 2px; }
+.filter-count { font-size: 12px; color: #49627c; }
+.unscored-note { display: flex; gap: 7px; align-items: flex-start; font-size: 12px; color: #526880; margin: 0 0 14px; line-height: 1.6; }
+.unscored-note svg { flex: none; margin-top: 2px; }
+
+@media (max-width: 740px) {
+  .hero.hero-compact { padding: 17px 19px; }
+  .hero-compact h1 { padding-right: 0; font-size: 19px; line-height: 1.3; }
+  .hero-compact .hero-subtitle { font-size: 12px; }
+  .hero-compact .hero-tagline { font-size: 11px; }
+  .indicator-toolbar { gap: 9px; }
+  .status-filters { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .status-filters button { padding: 8px 5px; font-size: 12px; }
+}
