@@ -1,8 +1,7 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-// GitHub Pages hosts this project under /370SMARTCARE/.
-// Local dev and ChatGPT Sites keep the root base path.
+// GitHub Pages uses /370SMARTCARE; Sites and local development use the root.
 const base = process.env.BASE_PATH ?? '';
 
 export default {
