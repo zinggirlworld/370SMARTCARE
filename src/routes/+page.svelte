@@ -9,9 +9,10 @@
   import EChart from '$lib/components/EChart.svelte';
   import {
     data, years, latestYear, counts, getValue, isPass, num,
-    trendOption, coverageOption, donutOption, workloadOption,
+    trendOption, workloadOption,
     type Metric, type Page
   } from '$lib/dashboard';
+  import { coverageWithValues, donutWithSummary, matchesStatus, metricStatus, readView, viewUrl, type StatusFilter } from '$lib/ux';
 
   type Nav = { page: Page; title: string; kicker: string };
   const nav: Nav[] = [
@@ -23,9 +24,15 @@
     { page:'method', title:'คำอธิบายข้อมูล', kicker:'Data governance' }
   ];
   const highlightDM = [data.dm[1], data.dm[5], data.dm[6], data.dm[8]];
-  let page: Page = $state('overview');
+  let page = $state<Page>('overview');
   let year = $state(latestYear);
   let search = $state('');
+  let statusFilter = $state<StatusFilter>('all');
+  const statusFilters: { value: StatusFilter; label: string }[] = [
+    { value: 'all', label: 'ทั้งหมด' },
+    { value: 'fail', label: 'ไม่ผ่านเกณฑ์' },
+    { value: 'pass', label: 'ผ่านเกณฑ์' }
+  ];
   let modalMetric = $state<Metric | null>(null);
   let trendDialog: HTMLDialogElement;
   let modalTrigger: HTMLButtonElement | null = null;
@@ -34,13 +41,11 @@
 
   let dmStatus = $derived(counts(data.dm, year));
   let copdStatus = $derived(counts(data.copd, year));
-  // Keep the reactive page state while avoiding TypeScript's initial-value narrowing.
-  function rowsForPage(currentPage: Page): Metric[] {
-    return currentPage === 'copd' ? data.copd : currentPage === 'experience' ? data.experience : data.dm;
-  }
-  let groupRows = $derived(rowsForPage(page));
-  let filteredRows = $derived(groupRows.filter((m) => m.name.toLocaleLowerCase('th').includes(search.toLocaleLowerCase('th'))));
-  let modalIndex = $derived(filteredRows.findIndex((m) => m.id === modalMetric?.id));
+  let groupRows = $derived(page==='copd'?data.copd:page==='experience'?data.experience:data.dm);
+  let filteredRows = $derived(groupRows.filter((m) => m.name.toLocaleLowerCase('th').includes(search.toLocaleLowerCase('th')) && matchesStatus(m, year, statusFilter)));
+  let missingCount = $derived(groupRows.filter((m) => getValue(m, year) === null).length);
+  let noGoalCount = $derived(groupRows.filter((m) => getValue(m, year) !== null && m.goal === null).length);
+  let modalIndex = $derived(modalMetric ? filteredRows.findIndex((m) => m.id === modalMetric?.id) : -1);
   let currentNav = $derived(nav.find((n)=>n.page===page) ?? nav[0]);
 
   // Responsive navigation: a desktop-collapsed sidebar must never hide mobile labels.
@@ -49,13 +54,40 @@
     const resetMobileNav = () => { if (mobile.matches) compactNav = false; };
     resetMobileNav();
     mobile.addEventListener('change', resetMobileNav);
-    return () => mobile.removeEventListener('change', resetMobileNav);
+    const restoreView = () => {
+      if (trendDialog?.open) closeTrend();
+      const view = readView(window.location.search);
+      page = view.page;
+      year = view.year;
+      search = '';
+      statusFilter = 'all';
+    };
+    restoreView();
+    // These are local report views on a single static route. Preserve host
+    // history metadata and restore the view from the URL on Back/Forward.
+    window.history.replaceState(window.history.state, '', viewUrl(new URL(window.location.href), page, year));
+    window.addEventListener('popstate', restoreView);
+    return () => {
+      mobile.removeEventListener('change', resetMobileNav);
+      window.removeEventListener('popstate', restoreView);
+    };
   });
 
   function go(next: Page) {
     page = next;
     search = '';
-    if (typeof window !== 'undefined') window.scrollTo({top:0,behavior:'auto'});
+    statusFilter = 'all';
+    if (typeof window !== 'undefined') {
+      const url = viewUrl(new URL(window.location.href), page, year);
+      if (url.href !== window.location.href) window.history.pushState(window.history.state, '', url);
+      window.scrollTo({top:0,behavior:'auto'});
+    }
+  }
+  function changeYear(next: number) {
+    if (!years.includes(next)) return;
+    year = next;
+    const url = viewUrl(new URL(window.location.href), page, year);
+    if (url.href !== window.location.href) window.history.pushState(window.history.state, '', url);
   }
   // Native dialog preserves the table's scroll position and traps keyboard focus.
   async function openTrend(metric: Metric, trigger: HTMLButtonElement) {
@@ -85,10 +117,9 @@
     if (trendDialog) trendDialog.scrollTop = 0;
   }
   function statusLabelFromMetric(m: Metric) {
-    const passed = isPass(m, year);
-    return passed === null ? 'ไม่มีเกณฑ์/ข้อมูล' : passed ? 'ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์';
+    return metricStatus(m, year);
   }
-  function goalText(m: Metric) { return m.goal ? `${m.goal.label}${m.unit==='%'?'%':m.unit==='นาที'?' นาที':''}` : 'ไม่กำหนด'; }
+  function goalText(m: Metric) { return m.goal ? `${m.goal.label}${m.unit==='%'?(m.goal.label.includes('%')?'':'%'):m.unit==='นาที'?' นาที':''}` : 'ไม่กำหนด'; }
   function showCurrent(m: Metric) { return `${num(getValue(m,year))}${getValue(m,year)===null?'':m.unit==='%'?'%':` ${m.unit}`}`; }
 </script>
 
@@ -134,14 +165,14 @@
       <div class="crumb"><House size={15}/><span>Smart Care</span><ChevronRight size={13}/><strong>{currentNav.title}</strong></div>
       <div class="top-actions">
         <label class="year-control"><CalendarDays size={16}/><span>ปีงบประมาณ</span>
-          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='method'} value={year} onchange={(e)=>year=Number(e.currentTarget.value)}>
+          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='method'} value={year} onchange={(e)=>changeYear(Number(e.currentTarget.value))}>
             {#each years as y}<option value={y}>{y}</option>{/each}
           </select>
         </label>
       </div>
     </header>
 
-    <section class="hero" aria-label="ชื่อแดชบอร์ด">
+    <section class="hero" class:hero-compact={page!=='overview'} aria-label="ชื่อแดชบอร์ด">
       <div class="hero-copy">
         <div class="eyebrow"><span class="eyebrow-dot"></span>HEALTHCARE INSIGHTS <span class="eyebrow-sep">✦</span> MADE WITH CARE</div>
         <h1>CLINIC M370 <span>SMART CARE</span> DASHBOARD</h1>
@@ -154,14 +185,14 @@
     {#if page==='overview'}
       <div class="section-heading"><div><span class="section-kicker">EXECUTIVE SNAPSHOT</span><h2>ภาพรวมผลดำเนินงาน <span class="muted">พ.ศ. {year}</span></h2></div><span class="section-context">เทียบเกณฑ์ที่กำหนดใน Excel ต้นทาง</span></div>
       <div class="kpi-grid">
-        <div class="kpi mint"><div class="kpi-label"><span>ผ่านเกณฑ์ DM</span><div class="icon-circle"><HeartPulse size={20}/></div></div><strong>{dmStatus.pass}<span>/{dmStatus.pass+dmStatus.fail}</span></strong><p>ตัวชี้วัดที่มีเกณฑ์ประเมิน</p><div class="mini-meter" role="progressbar" aria-label="สัดส่วนตัวชี้วัด DM ที่ผ่านเกณฑ์" aria-valuemin="0" aria-valuemax="100" aria-valuenow={(dmStatus.pass/Math.max(1,dmStatus.pass+dmStatus.fail))*100}><b style={`width:${(dmStatus.pass/Math.max(1,dmStatus.pass+dmStatus.fail))*100}%`}></b></div><div class="kpi-foot kpi-summary"><CheckCircle2 size={16}/> ผ่าน {dmStatus.pass} <span class="kpi-divider">•</span> ไม่ผ่าน {dmStatus.fail}</div></div>
-        <div class="kpi blue"><div class="kpi-label"><span>ผ่านเกณฑ์ COPD</span><div class="icon-circle"><Wind size={20}/></div></div><strong>{copdStatus.pass}<span>/{copdStatus.pass+copdStatus.fail}</span></strong><p>ตัวชี้วัดที่มีเกณฑ์ประเมิน</p><div class="mini-meter" role="progressbar" aria-label="สัดส่วนตัวชี้วัด COPD ที่ผ่านเกณฑ์" aria-valuemin="0" aria-valuemax="100" aria-valuenow={(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}><b style={`width:${(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}%`}></b></div><div class="kpi-foot kpi-summary"><CheckCircle2 size={16}/> ผ่าน {copdStatus.pass} <span class="kpi-divider">•</span> ไม่ผ่าน {copdStatus.fail}</div></div>
+        <div class="kpi mint"><div class="kpi-label"><span>ผ่านเกณฑ์ DM</span><div class="icon-circle"><HeartPulse size={20}/></div></div><strong>{dmStatus.pass}<span>/{dmStatus.pass+dmStatus.fail}</span></strong><p>ตัวชี้วัดที่มีเกณฑ์ประเมิน</p><div class="mini-meter" role="progressbar" aria-label="สัดส่วนตัวชี้วัด DM ที่ผ่านเกณฑ์" aria-valuemin="0" aria-valuemax="100" aria-valuenow={(dmStatus.pass/Math.max(1,dmStatus.pass+dmStatus.fail))*100}><b style={`width:${(dmStatus.pass/Math.max(1,dmStatus.pass+dmStatus.fail))*100}%`}></b></div><div class="kpi-foot kpi-summary" class:summary-attention={dmStatus.fail>0}>{#if dmStatus.fail>0}<AlertCircle size={16}/>{:else if dmStatus.pass>0}<CheckCircle2 size={16}/>{:else}<Info size={16}/>{/if} ผ่าน {dmStatus.pass} <span class="kpi-divider">•</span> ไม่ผ่าน {dmStatus.fail}</div></div>
+        <div class="kpi blue"><div class="kpi-label"><span>ผ่านเกณฑ์ COPD</span><div class="icon-circle"><Wind size={20}/></div></div><strong>{copdStatus.pass}<span>/{copdStatus.pass+copdStatus.fail}</span></strong><p>ตัวชี้วัดที่มีเกณฑ์ประเมิน</p><div class="mini-meter" role="progressbar" aria-label="สัดส่วนตัวชี้วัด COPD ที่ผ่านเกณฑ์" aria-valuemin="0" aria-valuemax="100" aria-valuenow={(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}><b style={`width:${(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}%`}></b></div><div class="kpi-foot kpi-summary" class:summary-attention={copdStatus.fail>0}>{#if copdStatus.fail>0}<AlertCircle size={16}/>{:else if copdStatus.pass>0}<CheckCircle2 size={16}/>{:else}<Info size={16}/>{/if} ผ่าน {copdStatus.pass} <span class="kpi-divider">•</span> ไม่ผ่าน {copdStatus.fail}</div></div>
         <div class="kpi lilac"><div class="kpi-label"><span>ความพึงพอใจ</span><div class="icon-circle"><Smile size={21}/></div></div><strong>{num(getValue(data.experience[0],year))}<span>%</span></strong><p>เป้าหมาย ≥ 80%</p><div class={`kpi-foot ${isPass(data.experience[0],year) === true ? 'is-positive' : isPass(data.experience[0],year) === false ? 'is-negative' : ''}`}>{#if isPass(data.experience[0],year)===true}<CheckCircle2 size={16}/> ผ่านเกณฑ์{:else}<AlertCircle size={14}/> {getValue(data.experience[0],year)===null?'ไม่มีข้อมูล':'ยังไม่ผ่านเกณฑ์'}{/if}</div></div>
         <div class="kpi peach"><div class="kpi-label"><span>ระยะเวลารับบริการ</span><div class="icon-circle"><Clock3 size={21}/></div></div><strong>{num(getValue(data.experience[1],year),0)}<span> นาที</span></strong><p>Cycle Time • เป้าหมาย 90 นาที</p><div class={`kpi-foot ${isPass(data.experience[1],year) === true ? 'is-positive' : isPass(data.experience[1],year) === false ? 'is-negative' : ''}`}>{#if getValue(data.experience[1],year)===null}<Info size={16}/> ไม่มีข้อมูล{:else if isPass(data.experience[1],year)===true}<CheckCircle2 size={16}/> เข้าเกณฑ์เบื้องต้น{:else}<AlertCircle size={16}/> มากกว่าเป้าหมายเบื้องต้น{/if}</div></div>
       </div>
       <div class="chart-grid">
-        <section class="panel"><div class="panel-heading"><div><span class="panel-badge mint-text">01 / PERFORMANCE</span><h3>สถานะตัวชี้วัดเบาหวาน</h3><p>ผ่าน/ไม่ผ่าน ตามเกณฑ์จาก Excel</p></div><span class="panel-chip">ปี {year}</span></div><EChart option={donutOption(data.dm,year)} label={`สัดส่วนผลตัวชี้วัด DM ปี ${year}`} height={280}/></section>
-        <section class="panel"><div class="panel-heading"><div><span class="panel-badge violet-text">02 / SCREENING</span><h3>ผลลัพธ์เทียบเป้าหมาย</h3><p>การติดตามและคัดกรองผู้ป่วยเบาหวาน</p></div><span class="panel-chip">%</span></div><EChart option={coverageOption(highlightDM,year)} label={`การคัดกรองเบาหวานเทียบเป้าหมาย ปี ${year}`} height={280}/></section>
+        <section class="panel"><div class="panel-heading"><div><span class="panel-badge mint-text">01 / PERFORMANCE</span><h3>สถานะตัวชี้วัดเบาหวาน</h3><p>ผ่าน/ไม่ผ่าน ตามเกณฑ์จาก Excel</p></div><span class="panel-chip">ปี {year}</span></div><EChart option={donutWithSummary(data.dm,year)} label={`สัดส่วนผลตัวชี้วัด DM ปี ${year}: ผ่าน ${dmStatus.pass} ไม่ผ่าน ${dmStatus.fail} ไม่มีเกณฑ์หรือข้อมูล ${dmStatus.unscored}`} height={280}/></section>
+        <section class="panel"><div class="panel-heading"><div><span class="panel-badge violet-text">02 / SCREENING</span><h3>ผลลัพธ์เทียบเป้าหมาย</h3><p>การติดตามและคัดกรองผู้ป่วยเบาหวาน</p></div><span class="panel-chip">%</span></div><EChart option={coverageWithValues(highlightDM,year)} label={`การคัดกรองเบาหวานเทียบเป้าหมาย ปี ${year}`} height={280}/></section>
       </div>
       <div class="section-heading tighter"><div><span class="section-kicker">FOCUS AREAS</span><h2>เจาะลึกตามกลุ่มงาน</h2></div></div>
       <div class="quick-grid">
@@ -179,6 +210,17 @@
       </div>
       
       <div class="section-heading tighter"><div><span class="section-kicker">DATA TABLE</span><h2>รายละเอียดตัวชี้วัด</h2><p class="muted-note">กด “เปิดกราฟ” ของแต่ละรายการเพื่อดูแนวโน้มทันที • เกณฑ์ “&gt;” และ “&lt;” ยึดตาม Excel เดิม</p></div><label class="searchbox"><Search size={17}/><input aria-label="ค้นหาตัวชี้วัด" placeholder="ค้นหาตัวชี้วัด..." bind:value={search}/></label></div>
+      <div class="indicator-toolbar">
+        <div class="status-filters" role="group" aria-label="กรองตามสถานะตัวชี้วัด">
+          {#each statusFilters as filter}
+            <button type="button" class:chosen={statusFilter===filter.value} aria-pressed={statusFilter===filter.value} onclick={()=>statusFilter=filter.value}>{filter.label}</button>
+          {/each}
+        </div>
+        <span class="filter-count" aria-live="polite">แสดง {filteredRows.length} จาก {groupRows.length} รายการ</span>
+      </div>
+      {#if noGoalCount || missingCount}
+        <p class="unscored-note"><Info size={16}/><span>{#if noGoalCount}ไม่มีเกณฑ์ {noGoalCount} รายการ{/if}{#if noGoalCount && missingCount} • {/if}{#if missingCount}ไม่มีข้อมูล {missingCount} รายการ{/if} — แยกจากรายการที่ใช้ประเมินผ่าน/ไม่ผ่าน</span></p>
+      {/if}
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div class="table-shell" role="region" aria-label="ตารางตัวชี้วัด เลื่อนแนวนอนได้" tabindex="0"><table><thead><tr><th>ตัวชี้วัด</th><th>เป้าหมาย</th><th>ผลปี {year}</th><th>สถานะ</th><th>แนวโน้ม</th></tr></thead><tbody>
         {#each filteredRows as m (m.id)}
