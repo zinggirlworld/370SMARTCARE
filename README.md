@@ -3,17 +3,20 @@
 **ระบบข้อมูลอัจฉริยะเพื่อการติดตามและดูแลผู้ป่วยโรคเรื้อรัง**  
 “เห็นข้อมูลไว รู้ความเสี่ยงเร็ว ติดตามต่อเนื่อง”
 
-Professional pastel healthcare analytics dashboard inspired by the existing NCD SvelteKit dashboard. Built with **SvelteKit 5 + TypeScript + ECharts + Lucide** and a **static-only / aggregate-only** data model.
+Candy Care healthcare analytics dashboard with vivid teal, blue, violet, pink and tangerine accents. Built with **Svelte 5 + SvelteKit 2 + TypeScript + ECharts + Lucide** and a **static-only / aggregate-only** data model.
 
 ## Features
-- Responsive Thai UI, mint/sky/lavender/peach healthcare design, accessible icons and pastel KPI cards
+- Responsive Thai UI, colorful rounded KPI cards, per-menu icon colors and readable white data tables
 - Executive overview: DM and COPD target status, satisfaction, service cycle time
 - DM (12 indicators) and COPD (4): trends, per-year status, searchable tables
 - Service volume (14 clinics): **VISIT** and **unique HN within each clinic** kept separate. No cross-clinic patient total
 - Experience: satisfaction and cycle-time trends
 - Native JS `Intl` for formatting; years as Thai Buddhist Era (พ.ศ.)
 - ECharts trend, comparison, donut and horizontal bar charts
-- UTF-8 BOM CSV export; formula injection defense when opened in Excel; print/PDF CSS
+- Trend chart modal with previous/next, Escape, focus return and preserved table scroll position
+- Combined search and pass/fail filters; page and Buddhist fiscal year persisted in the URL
+- No CSV or print buttons, and no Excel Snapshot badge in the top bar
+- Reduced-motion support and styled chart tooltips; original values and targets remain unchanged
 - Data provenance, limitations, empty/missing-value rules, no patient records
 - Cycle Time threshold `≤90` is a documented interpretation of the Excel goal `90 นาที`, **not a verified original comparator**
 - No backend, patient API, database credentials or scheduled refresh; chart/summary is a static Excel snapshot
@@ -23,8 +26,9 @@ Professional pastel healthcare analytics dashboard inspired by the existing NCD 
 From the extracted directory, run:
 
 ```cmd
-npm install
+npm ci
 npm run verify:data
+node scripts/verify-sites.mjs
 npm run check
 npm run build
 npm run dev
@@ -36,7 +40,11 @@ Open the Vite URL shown in CMD (usually http://localhost:5173).
 
 ```text
 src/routes/+page.svelte           Dashboard UI and interactions
-src/app.css                       Pastel design system / responsive layout
+src/app.css                       Original Vibrant v1.3 baseline
+src/candy.css                     Active Candy Care theme
+src/sites.css                     Responsive and interaction improvements
+src/lib/ux.ts                     Status, filters, view URL and chart labels
+src/lib/chart-presentation.ts     Chart styles without changing data
 src/lib/components/EChart.svelte Client-side charts
 src/lib/dashboard.ts              Data model and deterministic goal evaluation
 src/lib/data/metrics.json         Aggregate-only validated Excel snapshot
@@ -54,9 +62,15 @@ svelte.config.js                  adapter-static / no backend
 
 ## ChatGPT Sites publication
 
-ChatGPT Sites can create websites and accept **compatible** local projects, but it does **not** guarantee arbitrary SvelteKit runtime support. Static adaptation is prepared here, not certified. Use **Work > @Sites** to load the project, ask for **compatibility verification**, and review/save a draft version before deploying. If Sites cannot deploy the project shape directly, ask Sites to adapt the UI and aggregate JSON to a supported static starter preserving the logic and visual behavior.
+The static SvelteKit build is deployed on ChatGPT Sites. Latest design release: **Version 4 — Candy Care**.
 
-See `DEPLOY_CHATGPT_SITES.md` for detailed steps and a prompt to paste.
+Live Site: https://clinic-m370-smart-care.pongsakorn-j29.chatgpt.site
+
+This repository preserves GitHub Pages support through `BASE_PATH=/370SMARTCARE`. The existing GitHub Actions workflow remains manually triggered; uploading source does not deploy a new Pages build automatically.
+
+Validation reports: `docs/CANDY_CARE_VALIDATION_TH.md` (latest), `docs/UX_UPDATE_VALIDATION_TH.md`, `docs/PASTEL_THEME_VALIDATION_TH.md` and `docs/SITES_VALIDATION_TH.md`. Older reports and standalone previews describe historical versions.
+
+Before publishing data updates, validate aggregate data and clinical definitions against the approved source. Keep missing values as missing.
 
 ## Privacy & release gate
 
