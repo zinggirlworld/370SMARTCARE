@@ -34,9 +34,13 @@
 
   let dmStatus = $derived(counts(data.dm, year));
   let copdStatus = $derived(counts(data.copd, year));
-  let groupRows = $derived(page==='copd'?data.copd:page==='experience'?data.experience:data.dm);
+  // Keep the reactive page state while avoiding TypeScript's initial-value narrowing.
+  function rowsForPage(currentPage: Page): Metric[] {
+    return currentPage === 'copd' ? data.copd : currentPage === 'experience' ? data.experience : data.dm;
+  }
+  let groupRows = $derived(rowsForPage(page));
   let filteredRows = $derived(groupRows.filter((m) => m.name.toLocaleLowerCase('th').includes(search.toLocaleLowerCase('th'))));
-  let modalIndex = $derived(modalMetric ? filteredRows.findIndex((m) => m.id === modalMetric.id) : -1);
+  let modalIndex = $derived(filteredRows.findIndex((m) => m.id === modalMetric?.id));
   let currentNav = $derived(nav.find((n)=>n.page===page) ?? nav[0]);
 
   // Responsive navigation: a desktop-collapsed sidebar must never hide mobile labels.
@@ -175,6 +179,7 @@
       </div>
       
       <div class="section-heading tighter"><div><span class="section-kicker">DATA TABLE</span><h2>รายละเอียดตัวชี้วัด</h2><p class="muted-note">กด “เปิดกราฟ” ของแต่ละรายการเพื่อดูแนวโน้มทันที • เกณฑ์ “&gt;” และ “&lt;” ยึดตาม Excel เดิม</p></div><label class="searchbox"><Search size={17}/><input aria-label="ค้นหาตัวชี้วัด" placeholder="ค้นหาตัวชี้วัด..." bind:value={search}/></label></div>
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div class="table-shell" role="region" aria-label="ตารางตัวชี้วัด เลื่อนแนวนอนได้" tabindex="0"><table><thead><tr><th>ตัวชี้วัด</th><th>เป้าหมาย</th><th>ผลปี {year}</th><th>สถานะ</th><th>แนวโน้ม</th></tr></thead><tbody>
         {#each filteredRows as m (m.id)}
           <tr><td class="name-cell">{m.name}</td><td class="goal-cell">{goalText(m)}</td><td class="number-cell">{showCurrent(m)}</td><td><span class:is-pass={isPass(m,year)===true} class:is-fail={isPass(m,year)===false} class="status-chip">{statusLabelFromMetric(m)}</span></td><td><button type="button" class="trend-button" onclick={(event)=>openTrend(m, event.currentTarget)} aria-haspopup="dialog" aria-label={`เปิดกราฟแนวโน้มย้อนหลังของ ${m.name}`}><TrendingUp size={16}/> เปิดกราฟ</button></td></tr>
@@ -185,6 +190,7 @@
       <div class="mini-stats"><div class="mini-stat"><Stethoscope size={19}/><div><strong>{data.workload.length}</strong><span>คลินิก/บริการ</span></div></div><div class="mini-stat"><ChartNoAxesCombined size={19}/><div><strong>{num(Math.max(...data.workload.map(x=>x.visits2569??0)),0)}</strong><span>VISIT สูงสุดของคลินิกหนึ่ง</span></div></div><div class="mini-stat neutral"><UsersRound size={19}/><div><strong>HN</strong><span>จำนวนไม่ซ้ำภายในแต่ละคลินิก</span></div></div></div>
       <section class="panel"><div class="panel-heading"><div><span class="panel-badge mint-text">VISITS VS. UNIQUE HN</span><h3>คลินิกที่มีผู้รับบริการสูงสุด</h3><p>เปรียบเทียบ VISIT กับ HN แยกตามคลินิกในปี 2569</p></div><span class="panel-chip">TOP 8</span></div><EChart option={workloadOption(data.workload)} label="กราฟปริมาณ VISIT และ HN แยกตามคลินิก" height={410}/></section>
       <div class="section-heading tighter"><div><span class="section-kicker">ACTIVITY BREAKDOWN</span><h2>ข้อมูลแยกคลินิก</h2><p class="muted-note">ข้อมูลปี 2565–2568 แสดงตามต้นฉบับ แต่ยังไม่ยืนยันว่าใช้หน่วย VISIT เหมือนปี 2569</p></div></div>
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div class="table-shell" role="region" aria-label="ตารางข้อมูลบริการแยกคลินิก เลื่อนแนวนอนได้" tabindex="0"><table class="volume-table"><thead><tr><th>คลินิก</th><th>รหัส</th>{#each [2565,2566,2567,2568] as y}<th>{y}</th>{/each}<th>2569 VISIT</th><th>2569 HN</th></tr></thead><tbody>
         {#each data.workload as item (item.code)}<tr><td class="name-cell">{item.name}</td><td>{item.code}</td>{#each [2565,2566,2567,2568] as y}<td class="number-cell">{num(item.historical[String(y)],0)}</td>{/each}<td class="number-cell">{num(item.visits2569,0)}</td><td class="number-cell">{num(item.uniqueHn2569,0)}</td></tr>{/each}
       </tbody></table></div>
@@ -229,7 +235,7 @@
         <h2 id="trend-dialog-heading">กราฟแนวโน้มย้อนหลัง</h2>
         <p id="trend-dialog-caption">ข้อมูลย้อนหลังตามปี พ.ศ. จาก Excel ต้นฉบับ</p>
       </div>
-      <button type="button" class="trend-dialog-close" onclick={closeTrend} aria-label="ปิดกราฟและกลับไปที่ตาราง" autofocus><X size={21}/></button>
+      <button type="button" class="trend-dialog-close" onclick={closeTrend} aria-label="ปิดกราฟและกลับไปที่ตาราง"><X size={21}/></button>
     </div>
     <div class="trend-dialog-content">
       <div class="trend-metric-title">{modalMetric.name}</div>
