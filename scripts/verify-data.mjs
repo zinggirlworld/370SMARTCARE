@@ -5,7 +5,7 @@ const d = JSON.parse(fs.readFileSync(path,'utf8'));
 const all = [...d.dm,...d.copd,...d.experience];
 assert.equal(d.metadata.privacy, 'AGGREGATES_ONLY');
 assert.equal(d.dm.length,12);
-assert.equal(d.copd.length,4);
+assert.equal(d.copd.length,6);
 assert.equal(d.experience.length,2);
 assert.equal(d.workload.length,14);
 assert.equal(d.dm[0].values['2569'],25.48);

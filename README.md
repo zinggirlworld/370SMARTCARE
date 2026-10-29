@@ -8,7 +8,7 @@ Candy Care healthcare analytics dashboard with vivid teal, blue, violet, pink an
 ## Features
 - Responsive Thai UI, colorful rounded KPI cards, per-menu icon colors and readable white data tables
 - Executive overview: DM and COPD target status, satisfaction, service cycle time
-- DM (12 indicators) and COPD (4): trends, per-year status, searchable tables
+- DM (12 indicators) and COPD (6): trends, per-year status, searchable tables
 - Service volume (14 clinics): **VISIT** and **unique HN within each clinic** kept separate. No cross-clinic patient total
 - Experience: satisfaction and cycle-time trends
 - Native JS `Intl` for formatting; years as Thai Buddhist Era (พ.ศ.)
@@ -20,6 +20,10 @@ Candy Care healthcare analytics dashboard with vivid teal, blue, violet, pink an
 - Data provenance, limitations, empty/missing-value rules, no patient records
 - Cycle Time threshold `≤90` is a documented interpretation of the Excel goal `90 นาที`, **not a verified original comparator**
 - No backend, patient API, database credentials or scheduled refresh; chart/summary is a static Excel snapshot
+
+## COPD additions — 29 October 2026
+
+Two indicators were added from the supplied screenshots: acute exacerbation (<30%) and ICS/LABA, LAMA according to indications (≥90%). Observed values cover FY2564–2567. FY2568–2569 outcomes remain missing; future targets are shown separately for 2570–2572, with 2573–2574 left unspecified. No original values or calculation rules changed. See `docs/COPD_ADDITION_20261029_TH.md`.
 
 ## Local development (Windows CMD)
 
@@ -62,7 +66,7 @@ svelte.config.js                  adapter-static / no backend
 
 ## ChatGPT Sites publication
 
-The static SvelteKit build is deployed on ChatGPT Sites. Latest design release: **Version 4 — Candy Care**.
+The static SvelteKit build is deployed on ChatGPT Sites. Latest design release: **Version 5 — Candy Care + COPD additions**.
 
 Live Site: https://clinic-m370-smart-care.pongsakorn-j29.chatgpt.site
 
