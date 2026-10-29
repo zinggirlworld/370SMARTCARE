@@ -34,3 +34,12 @@
   .status-filters { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .status-filters button { padding: 8px 5px; font-size: 12px; }
 }
+
+/* COPD extension: targets and observed outcomes are separate. */
+.copd-source-note { margin: 10px 0 0; }
+.copd-plan { margin-top: 28px; }
+.copd-plan-table caption { text-align:left; padding:12px 17px; font-size:12px; color:var(--muted); background:#fff; caption-side:top; }
+.copd-plan-table th[scope="row"] { background:#fff; color:var(--ink); white-space:normal; min-width:260px; font-size:12px; letter-spacing:normal; }
+.copd-plan-table td { color:#7132a1; }
+.copd-plan-note { display:flex; align-items:flex-start; gap:7px; color:var(--muted); font-size:12px; margin:12px 2px; }
+.copd-plan-note svg { flex:none; margin-top:2px; }
