@@ -7,7 +7,7 @@ import ts from 'typescript';
 const root = new URL('../', import.meta.url);
 const read = (path) => fs.readFileSync(new URL(path, root), 'utf8');
 const baseline = {
-  'src/lib/data/metrics.json': '0dd0f82a2e6a5ec02e3affae19eb4ad051e108039115e45c8094fa53c98e3aab',
+  'scripts/fixtures/metrics-before-copd-addition.json': '0dd0f82a2e6a5ec02e3affae19eb4ad051e108039115e45c8094fa53c98e3aab',
   'src/lib/dashboard.ts': '46f7f90f9232b0d362d9b170fc49d15cdd068864be7ea8b11d189a65b2c799a2',
   'src/app.css': 'fb12c2b5e5ca3863b090822f005042fc9838eece5bbc0db6995df4a078ac9485'
 };
@@ -15,6 +15,8 @@ for (const [path, hash] of Object.entries(baseline)) {
   assert.equal(crypto.createHash('sha256').update(read(path)).digest('hex'), hash, `${path} differs from ZIP`);
 }
 const d = JSON.parse(read('src/lib/data/metrics.json'));
+const originalData = JSON.parse(read('scripts/fixtures/metrics-before-copd-addition.json'));
+assert.deepEqual({...d, copd:d.copd.slice(0,4)}, originalData, 'Original dataset must remain unchanged');
 const js = ts.transpileModule(read('src/lib/dashboard.ts'), {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 }
 }).outputText.replace("import raw from './data/metrics.json';", `const raw = ${JSON.stringify(d)};`);
@@ -22,7 +24,7 @@ const dashboardUrl = `data:text/javascript;base64,${Buffer.from(js).toString('ba
 const h = await import(dashboardUrl);
 assert.deepEqual(h.years, [2569, 2568, 2567, 2566, 2565, 2564]);
 assert.deepEqual(h.counts(d.dm, 2569), { pass: 5, fail: 7, unscored: 0 });
-assert.deepEqual(h.counts(d.copd, 2569), { pass: 0, fail: 3, unscored: 1 });
+assert.deepEqual(h.counts(d.copd, 2569), { pass: 0, fail: 3, unscored: 3 });
 assert.equal(h.getValue(d.dm[0], 2570), null);
 assert.equal(h.num(null), '—');
 assert.equal(h.isPass(d.dm[0], 2570), null);
@@ -48,7 +50,7 @@ for (const m of [...d.dm,...d.copd,...d.experience]) {
   if (m.goal) assert.deepEqual(keys(m.goal), ['label','op','value']);
 }
 for (const w of d.workload) assert.deepEqual(keys(w), ['code','historical','name','uniqueHn2569','visits2569']);
-console.log('PASS ZIP hashes: metrics, calculation helpers, Vibrant v1.3 CSS unchanged');
+console.log('PASS original ZIP data preserved; calculation helpers and Vibrant v1.3 CSS unchanged');
 console.log('PASS six fiscal years, DM/COPD scoring, boundary operators and missing-vs-zero');
 console.log('PASS official labels, aggregate schemas, no HIS/LAN calls or prohibited topbar actions');
 
@@ -102,3 +104,28 @@ assert.ok(footAxis.max({min:5.69,max:62.45}) > d.dm[8].goal.value);
 const acuteAxis = theme.presentChart(h.trendOption(d.dm[2])).yAxis;
 assert.ok(acuteAxis.min({min:5.35,max:6.41}) < d.dm[2].goal.value);
 console.log('PASS target lines remain inside the visible trend axis above or below observed values');
+
+// Source screenshots: actual results are C:F (2564–2567), not G:K target cells.
+assert.equal(d.copd.length,6);
+assert.deepEqual(d.copd[4].values, {'2564':35.86,'2565':27.49,'2566':31.26,'2567':29.62,'2568':null,'2569':null});
+assert.deepEqual(d.copd[5].values, {'2564':75.19,'2565':80.54,'2566':82.64,'2567':88.89,'2568':null,'2569':null});
+assert.deepEqual(d.copd[4].goal,{op:'<',value:30,label:'< 30%'});
+assert.deepEqual(d.copd[5].goal,{op:'≥',value:90,label:'≥ 90%'});
+for(const m of d.copd.slice(4)) {
+  assert.equal(h.getValue(m,2569),null);
+  assert.equal(h.isPass(m,2569),null);
+  assert.equal(ux.matchesStatus(m,2569,'pass'),false);
+  assert.equal(ux.matchesStatus(m,2569,'fail'),false);
+  assert.deepEqual(h.trendOption(m).series[0].data.slice(-2),[null,null]);
+}
+assert.equal(h.isPass(d.copd[4],2564),false);
+assert.equal(h.isPass(d.copd[4],2565),true);
+assert.equal(h.isPass(d.copd[4],2567),true);
+assert.equal(h.isPass({...d.copd[4],values:{'2569':30}},2569),false);
+assert.equal(h.isPass({...d.copd[5],values:{'2569':90}},2569),true);
+const plan=JSON.parse(read('src/lib/data/copd-additions-source.json'));
+assert.deepEqual(plan.planningYears,[2570,2571,2572,2573,2574]);
+assert.deepEqual(plan.sourceColumns,{C:2564,D:2565,E:2566,F:2567,G:2568,H:2569,I:2570,J:2571,K:2572,L:2573,M:2574});
+assert.deepEqual(plan.rows.map(r=>r.targets),[{'2570':'< 30%','2571':'< 30%','2572':'< 30%','2573':null,'2574':null},{'2570':'≥ 90%','2571':'≥ 90%','2572':'≥ 90%','2573':null,'2574':null}]);
+assert.deepEqual(h.years,[2569,2568,2567,2566,2565,2564]);
+console.log('PASS COPD screenshot values, strict/inclusive goals, NULL exclusions and separate future targets');
