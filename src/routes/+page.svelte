@@ -14,6 +14,12 @@
   } from '$lib/dashboard';
   import { coverageWithValues, donutWithSummary, matchesStatus, metricStatus, readView, viewUrl, type StatusFilter } from '$lib/ux';
 
+  import copdAddition from '$lib/data/copd-additions-source.json';
+  const copdPlanningRows = copdAddition.rows.map(row => ({
+    metric: data.copd.find(metric => metric.id === row.metricId)!,
+    targets: row.targets as Record<string, string | null>
+  }));
+
   type Nav = { page: Page; title: string; kicker: string };
   const nav: Nav[] = [
     { page:'overview', title:'ภาพรวมผู้บริหาร', kicker:'Overview' },
@@ -186,7 +192,7 @@
       <div class="section-heading"><div><span class="section-kicker">EXECUTIVE SNAPSHOT</span><h2>ภาพรวมผลดำเนินงาน <span class="muted">พ.ศ. {year}</span></h2></div><span class="section-context">เทียบเกณฑ์ที่กำหนดใน Excel ต้นทาง</span></div>
       <div class="kpi-grid">
         <div class="kpi mint"><div class="kpi-label"><span>ผ่านเกณฑ์ DM</span><div class="icon-circle"><HeartPulse size={20}/></div></div><strong>{dmStatus.pass}<span>/{dmStatus.pass+dmStatus.fail}</span></strong><p>ตัวชี้วัดที่มีเกณฑ์ประเมิน</p><div class="mini-meter" role="progressbar" aria-label="สัดส่วนตัวชี้วัด DM ที่ผ่านเกณฑ์" aria-valuemin="0" aria-valuemax="100" aria-valuenow={(dmStatus.pass/Math.max(1,dmStatus.pass+dmStatus.fail))*100}><b style={`width:${(dmStatus.pass/Math.max(1,dmStatus.pass+dmStatus.fail))*100}%`}></b></div><div class="kpi-foot kpi-summary" class:summary-attention={dmStatus.fail>0}>{#if dmStatus.fail>0}<AlertCircle size={16}/>{:else if dmStatus.pass>0}<CheckCircle2 size={16}/>{:else}<Info size={16}/>{/if} ผ่าน {dmStatus.pass} <span class="kpi-divider">•</span> ไม่ผ่าน {dmStatus.fail}</div></div>
-        <div class="kpi blue"><div class="kpi-label"><span>ผ่านเกณฑ์ COPD</span><div class="icon-circle"><Wind size={20}/></div></div><strong>{copdStatus.pass}<span>/{copdStatus.pass+copdStatus.fail}</span></strong><p>ตัวชี้วัดที่มีเกณฑ์ประเมิน</p><div class="mini-meter" role="progressbar" aria-label="สัดส่วนตัวชี้วัด COPD ที่ผ่านเกณฑ์" aria-valuemin="0" aria-valuemax="100" aria-valuenow={(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}><b style={`width:${(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}%`}></b></div><div class="kpi-foot kpi-summary" class:summary-attention={copdStatus.fail>0}>{#if copdStatus.fail>0}<AlertCircle size={16}/>{:else if copdStatus.pass>0}<CheckCircle2 size={16}/>{:else}<Info size={16}/>{/if} ผ่าน {copdStatus.pass} <span class="kpi-divider">•</span> ไม่ผ่าน {copdStatus.fail}</div></div>
+        <div class="kpi blue"><div class="kpi-label"><span>ผ่านเกณฑ์ COPD</span><div class="icon-circle"><Wind size={20}/></div></div><strong>{copdStatus.pass}<span>/{copdStatus.pass+copdStatus.fail}</span></strong><p>มีผลและเกณฑ์ประเมิน {copdStatus.pass+copdStatus.fail} จาก {data.copd.length} รายการ</p><div class="mini-meter" role="progressbar" aria-label="สัดส่วนตัวชี้วัด COPD ที่ผ่านเกณฑ์" aria-valuemin="0" aria-valuemax="100" aria-valuenow={(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}><b style={`width:${(copdStatus.pass/Math.max(1,copdStatus.pass+copdStatus.fail))*100}%`}></b></div><div class="kpi-foot kpi-summary" class:summary-attention={copdStatus.fail>0}>{#if copdStatus.fail>0}<AlertCircle size={16}/>{:else if copdStatus.pass>0}<CheckCircle2 size={16}/>{:else}<Info size={16}/>{/if} ผ่าน {copdStatus.pass} <span class="kpi-divider">•</span> ไม่ผ่าน {copdStatus.fail}</div></div>
         <div class="kpi lilac"><div class="kpi-label"><span>ความพึงพอใจ</span><div class="icon-circle"><Smile size={21}/></div></div><strong>{num(getValue(data.experience[0],year))}<span>%</span></strong><p>เป้าหมาย ≥ 80%</p><div class={`kpi-foot ${isPass(data.experience[0],year) === true ? 'is-positive' : isPass(data.experience[0],year) === false ? 'is-negative' : ''}`}>{#if isPass(data.experience[0],year)===true}<CheckCircle2 size={16}/> ผ่านเกณฑ์{:else}<AlertCircle size={14}/> {getValue(data.experience[0],year)===null?'ไม่มีข้อมูล':'ยังไม่ผ่านเกณฑ์'}{/if}</div></div>
         <div class="kpi peach"><div class="kpi-label"><span>ระยะเวลารับบริการ</span><div class="icon-circle"><Clock3 size={21}/></div></div><strong>{num(getValue(data.experience[1],year),0)}<span> นาที</span></strong><p>Cycle Time • เป้าหมาย 90 นาที</p><div class={`kpi-foot ${isPass(data.experience[1],year) === true ? 'is-positive' : isPass(data.experience[1],year) === false ? 'is-negative' : ''}`}>{#if getValue(data.experience[1],year)===null}<Info size={16}/> ไม่มีข้อมูล{:else if isPass(data.experience[1],year)===true}<CheckCircle2 size={16}/> เข้าเกณฑ์เบื้องต้น{:else}<AlertCircle size={16}/> มากกว่าเป้าหมายเบื้องต้น{/if}</div></div>
       </div>
@@ -197,7 +203,7 @@
       <div class="section-heading tighter"><div><span class="section-kicker">FOCUS AREAS</span><h2>เจาะลึกตามกลุ่มงาน</h2></div></div>
       <div class="quick-grid">
         <button class="quick-card mint" onclick={()=>go('dm')}><span class="quick-icon"><HeartPulse size={22}/></span><strong>เบาหวาน (DM)</strong><span>12 ตัวชี้วัด • ผลลัพธ์และภาวะแทรกซ้อน</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
-        <button class="quick-card blue" onclick={()=>go('copd')}><span class="quick-icon"><Wind size={22}/></span><strong>โรคปอด COPD</strong><span>4 ตัวชี้วัด • ตรวจสมรรถภาพปอดและวัคซีน</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
+        <button class="quick-card blue" onclick={()=>go('copd')}><span class="quick-icon"><Wind size={22}/></span><strong>โรคปอด COPD</strong><span>{data.copd.length} ตัวชี้วัด • สมรรถภาพปอด วัคซีน และการดูแล</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
         <button class="quick-card lilac" onclick={()=>go('workload')}><span class="quick-icon"><Stethoscope size={22}/></span><strong>ปริมาณงานบริการ</strong><span>14 คลินิก/บริการ • VISIT และ HN แยกหน่วย</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
         <button class="quick-card peach" onclick={()=>go('experience')}><span class="quick-icon"><HeartHandshake size={22}/></span><strong>คุณภาพบริการ</strong><span>ความพึงพอใจและ Cycle Time</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
       </div>
@@ -209,6 +215,9 @@
         <div class="mini-stat neutral"><ClipboardCheck size={19}/><div><strong>{groupRows.length}</strong><span>ตัวชี้วัดทั้งหมด</span></div></div>
       </div>
       
+      {#if page==='copd'}
+        <div class="info-note copd-source-note"><Info size={19}/><p>เพิ่ม 2 ตัวชี้วัดจากภาพตารางที่ส่งวันที่ 29 ต.ค. 2569 มีผลจริงปี 2564–2567 ส่วนปี 2568–2569 ยังไม่มีผลจริง จึงแสดง “—” และไม่นับเป็นผ่านหรือไม่ผ่านเกณฑ์</p></div>
+      {/if}
       <div class="section-heading tighter"><div><span class="section-kicker">DATA TABLE</span><h2>รายละเอียดตัวชี้วัด</h2><p class="muted-note">กด “เปิดกราฟ” ของแต่ละรายการเพื่อดูแนวโน้มทันที • เกณฑ์ “&gt;” และ “&lt;” ยึดตาม Excel เดิม</p></div><label class="searchbox"><Search size={17}/><input aria-label="ค้นหาตัวชี้วัด" placeholder="ค้นหาตัวชี้วัด..." bind:value={search}/></label></div>
       <div class="indicator-toolbar">
         <div class="status-filters" role="group" aria-label="กรองตามสถานะตัวชี้วัด">
@@ -227,6 +236,16 @@
           <tr><td class="name-cell">{m.name}</td><td class="goal-cell">{goalText(m)}</td><td class="number-cell">{showCurrent(m)}</td><td><span class:is-pass={isPass(m,year)===true} class:is-fail={isPass(m,year)===false} class="status-chip">{statusLabelFromMetric(m)}</span></td><td><button type="button" class="trend-button" onclick={(event)=>openTrend(m, event.currentTarget)} aria-haspopup="dialog" aria-label={`เปิดกราฟแนวโน้มย้อนหลังของ ${m.name}`}><TrendingUp size={16}/> เปิดกราฟ</button></td></tr>
         {/each}
       </tbody></table>{#if filteredRows.length===0}<p class="empty-state">ไม่พบตัวชี้วัดที่ค้นหา</p>{/if}</div>
+      {#if page==='copd'}
+        <section class="copd-plan" aria-labelledby="copd-plan-heading">
+          <div class="section-heading"><div><span class="section-kicker">STRATEGIC TARGETS · 2570–2574</span><h2 id="copd-plan-heading">ค่าเป้าหมายจากการพยากรณ์</h2><p class="muted-note">เฉพาะ 2 ตัวชี้วัดที่เพิ่มจากภาพ • เป็นเป้าหมาย ไม่ใช่ผลการดำเนินงาน</p></div><span class="panel-chip">แผนยุทธศาสตร์โรงพยาบาล</span></div>
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <div class="table-shell copd-plan-table" role="region" aria-label="ตารางเป้าหมาย COPD ปี 2570 ถึง 2574 เลื่อนแนวนอนได้" tabindex="0"><table><caption>เป้าหมายปี 2570–2574 ตามภาพที่ส่งมา ช่องที่ไม่ระบุแสดง “—”</caption><thead><tr><th scope="col">ตัวชี้วัด</th>{#each copdAddition.planningYears as planningYear}<th scope="col">พ.ศ. {planningYear}</th>{/each}</tr></thead><tbody>
+            {#each copdPlanningRows as row (row.metric.id)}<tr><th scope="row" class="name-cell">{row.metric.name}</th>{#each copdAddition.planningYears as planningYear}<td class="number-cell">{row.targets[String(planningYear)] ?? '—'}</td>{/each}</tr>{/each}
+          </tbody></table></div>
+          <p class="copd-plan-note"><Info size={16}/> ปี 2573–2574 ยังไม่ระบุค่าในภาพ จึงไม่คาดการณ์หรือเติมเป้าหมายต่อเอง</p>
+        </section>
+      {/if}
     {:else if page==='workload'}
       <div class="section-heading"><div><span class="section-kicker">SERVICE VOLUME</span><h2>ปริมาณงานบริการ <span class="muted">ปี 2569</span></h2><p class="muted-note">แสดง VISIT และ HN เป็นคนละหน่วย • ห้ามนำผลรวม HN ข้ามคลินิกไปแทนจำนวนผู้ป่วยไม่ซ้ำ</p></div></div>
       <div class="mini-stats"><div class="mini-stat"><Stethoscope size={19}/><div><strong>{data.workload.length}</strong><span>คลินิก/บริการ</span></div></div><div class="mini-stat"><ChartNoAxesCombined size={19}/><div><strong>{num(Math.max(...data.workload.map(x=>x.visits2569??0)),0)}</strong><span>VISIT สูงสุดของคลินิกหนึ่ง</span></div></div><div class="mini-stat neutral"><UsersRound size={19}/><div><strong>HN</strong><span>จำนวนไม่ซ้ำภายในแต่ละคลินิก</span></div></div></div>
@@ -249,6 +268,7 @@
         <article class="method-card"><div class="method-icon lilac"><ShieldCheck size={23}/></div><h3>ความเป็นส่วนตัว</h3><p>เวอร์ชันเว็บไซต์ใช้เฉพาะสถิติสรุป ไม่บรรจุชื่อ HN, CID, วันเกิด หรือผลตรวจผู้ป่วยรายบุคคล และไม่เชื่อมต่อฐานข้อมูลโรงพยาบาล</p></article>
         <article class="method-card"><div class="method-icon peach"><CalendarDays size={23}/></div><h3>ปีงบประมาณและการอัปเดต</h3><p>แสดงปี พ.ศ. ตามที่ปรากฏในไฟล์ Excel แหล่งข้อมูลยังไม่มีวันปิดงวดแน่ชัด ต้องตรวจสอบก่อนเรียกข้อมูลปี 2569 ว่าเป็นข้อมูลครบปี</p></article>
       </div>
+      <div class="info-note"><Info size={19}/><p>ส่วนเพิ่มเติม COPD วันที่ 29 ต.ค. 2569 อ้างอิงภาพหัวตารางและแถว 28–29 ที่ผู้ใช้จัดส่ง: ผลจริงอยู่ปี 2564–2567; เครื่องหมาย &lt;30% และ ≥90% เป็นเกณฑ์/เป้าหมาย ไม่ใช่ผลจริง ส่วนแผนปี 2573–2574 ยังไม่ระบุ และไม่มีการคาดการณ์เพิ่ม</p></div>
       <div class="info-note caution"><AlertCircle size={20}/><div><strong>DM Remission ยังไม่รวมในข้อมูลเผยแพร่</strong><p>ไฟล์ DM Remission เป็นข้อมูลระดับรายบุคคลและยังต้องตรวจสอบข้อมูลซ้ำ นิยามทางคลินิก และการเปิดเผยกลุ่มย่อย จึงไม่นำข้อมูลชุดนั้นเข้าสู่ ChatGPT Sites ฉบับนี้</p></div></div>
       <div class="info-note"><Info size={19}/><p>ข้อมูลย้อนหลังปี 2565–2568 ในชีตปริมาณงานยังไม่มีคำยืนยันชัดเจนว่าหน่วยนับตรงกับ VISIT ในปี 2569 และ HN นับไม่ซ้ำภายในคลินิก ไม่ใช่จำนวนผู้ป่วยไม่ซ้ำข้ามคลินิก</p></div>
     {/if}
