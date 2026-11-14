@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import {
-    LayoutDashboard, HeartPulse, Wind, Stethoscope, Sparkles, BookOpenText, CalendarDays,
+    LayoutDashboard, HeartPulse, Wind, Stethoscope, Sparkles, CalendarDays,
     ShieldCheck, ArrowUpRight, Activity, CheckCircle2, AlertCircle,
     Search, TrendingUp, UsersRound, Clock3, ChevronRight, Info, ClipboardCheck, HeartHandshake,
-    Eye, Footprints, Smile, ChartNoAxesCombined, Database, House, PanelLeftClose, PanelLeftOpen, X, ChevronLeft
+    Eye, Footprints, Smile, ChartNoAxesCombined, House, PanelLeftClose, PanelLeftOpen, X, ChevronLeft
   } from 'lucide-svelte';
   import EChart from '$lib/components/EChart.svelte';
   import {
@@ -29,7 +29,6 @@
     { page:'copd', title:'โรคปอด COPD', kicker:'Respiratory' },
     { page:'workload', title:'ปริมาณงานบริการ', kicker:'Service volume' },
     { page:'experience', title:'คุณภาพบริการ', kicker:'Experience' },
-    { page:'method', title:'คำอธิบายข้อมูล', kicker:'Data governance' },
     { page:'remission', title:'ติดตาม DM Remission', kicker:'DM Remission' }
   ];
   const highlightDM = [data.dm[1], data.dm[5], data.dm[6], data.dm[8]];
@@ -155,17 +154,13 @@
             {:else if item.page==='copd'}<Wind size={19}/>
             {:else if item.page==='workload'}<Stethoscope size={19}/>
             {:else if item.page==='experience'}<HeartHandshake size={19}/>
-            {:else if item.page==='remission'}<ClipboardCheck size={19}/>
-            {:else}<BookOpenText size={19}/>{/if}
+            {:else if item.page==='remission'}<ClipboardCheck size={19}/>{/if}
           </span>
           {#if !compactNav}<span class="nav-text"><strong>{item.title}</strong><small>{item.kicker}</small></span><ChevronRight size={16} class="nav-chevron"/>{/if}
         </button>
       {/each}
     </nav>
-    {#if !compactNav}
-      <div class="side-bottom"><ShieldCheck size={20}/><div><strong>Aggregate data only</strong><span>ข้อมูลสรุป ไม่ใช่ข้อมูลผู้ป่วยรายบุคคล</span></div></div>
-    {/if}
-    <button class="collapse-button" title={compactNav?'ขยายเมนู':'ย่อเมนู'} aria-label={compactNav?'ขยายเมนู':'ย่อเมนู'} onclick={()=>compactNav=!compactNav}>
+    <button class="collapse-button" style="margin-top:auto" title={compactNav?'ขยายเมนู':'ย่อเมนู'} aria-label={compactNav?'ขยายเมนู':'ย่อเมนู'} onclick={()=>compactNav=!compactNav}>
       {#if compactNav}<PanelLeftOpen size={17}/>{:else}<PanelLeftClose size={17}/>{/if}
     </button>
   </aside>
@@ -175,7 +170,7 @@
       <div class="crumb"><House size={15}/><span>Smart Care</span><ChevronRight size={13}/><strong>{currentNav.title}</strong></div>
       <div class="top-actions">
         <label class="year-control"><CalendarDays size={16}/><span>ปีงบประมาณ</span>
-          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='method'||page==='remission'} value={page==='remission'?2569:year} onchange={(e)=>changeYear(Number(e.currentTarget.value))}>
+          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='remission'} value={page==='remission'?2569:year} onchange={(e)=>changeYear(Number(e.currentTarget.value))}>
             {#each years as y}<option value={y}>{y}</option>{/each}
           </select>
         </label>
@@ -224,7 +219,7 @@
       {#if page==='copd'}
         <div class="info-note copd-source-note"><Info size={19}/><p>เพิ่ม 2 ตัวชี้วัดจากภาพตารางที่ส่งวันที่ 29 ต.ค. 2569 มีผลจริงปี 2564–2567 ส่วนปี 2568–2569 ยังไม่มีผลจริง จึงแสดง “—” และไม่นับเป็นผ่านหรือไม่ผ่านเกณฑ์</p></div>
       {/if}
-      <div class="section-heading tighter"><div><span class="section-kicker">DATA TABLE</span><h2>รายละเอียดตัวชี้วัด</h2><p class="muted-note">กด “เปิดกราฟ” ของแต่ละรายการเพื่อดูแนวโน้มทันที • เกณฑ์ “&gt;” และ “&lt;” ยึดตาม Excel เดิม</p></div><label class="searchbox"><Search size={17}/><input aria-label="ค้นหาตัวชี้วัด" placeholder="ค้นหาตัวชี้วัด..." bind:value={search}/></label></div>
+      <div class="section-heading tighter"><div><span class="section-kicker">DATA TABLE</span></div><label class="searchbox"><Search size={17}/><input aria-label="ค้นหาตัวชี้วัด" placeholder="ค้นหาตัวชี้วัด..." bind:value={search}/></label></div>
       <div class="indicator-toolbar">
         <div class="status-filters" role="group" aria-label="กรองตามสถานะตัวชี้วัด">
           {#each statusFilters as filter}
@@ -253,10 +248,10 @@
         </section>
       {/if}
     {:else if page==='workload'}
-      <div class="section-heading"><div><span class="section-kicker">SERVICE VOLUME</span><h2>ปริมาณงานบริการ <span class="muted">ปี 2569</span></h2><p class="muted-note">แสดง VISIT และ HN เป็นคนละหน่วย • ห้ามนำผลรวม HN ข้ามคลินิกไปแทนจำนวนผู้ป่วยไม่ซ้ำ</p></div></div>
+      <div class="section-heading"><div><span class="section-kicker">SERVICE VOLUME</span><h2>ปริมาณงานบริการ <span class="muted">ปี 2569</span></h2></div></div>
       <div class="mini-stats"><div class="mini-stat"><Stethoscope size={19}/><div><strong>{data.workload.length}</strong><span>คลินิก/บริการ</span></div></div><div class="mini-stat"><ChartNoAxesCombined size={19}/><div><strong>{num(Math.max(...data.workload.map(x=>x.visits2569??0)),0)}</strong><span>VISIT สูงสุดของคลินิกหนึ่ง</span></div></div><div class="mini-stat neutral"><UsersRound size={19}/><div><strong>HN</strong><span>จำนวนไม่ซ้ำภายในแต่ละคลินิก</span></div></div></div>
       <section class="panel"><div class="panel-heading"><div><span class="panel-badge mint-text">VISITS VS. UNIQUE HN</span><h3>คลินิกที่มีผู้รับบริการสูงสุด</h3><p>เปรียบเทียบ VISIT กับ HN แยกตามคลินิกในปี 2569</p></div><span class="panel-chip">TOP 8</span></div><EChart option={workloadOption(data.workload)} label="กราฟปริมาณ VISIT และ HN แยกตามคลินิก" height={410}/></section>
-      <div class="section-heading tighter"><div><span class="section-kicker">ACTIVITY BREAKDOWN</span><h2>ข้อมูลแยกคลินิก</h2><p class="muted-note">ข้อมูลปี 2565–2568 แสดงตามต้นฉบับ แต่ยังไม่ยืนยันว่าใช้หน่วย VISIT เหมือนปี 2569</p></div></div>
+      <div class="section-heading tighter"><div><span class="section-kicker">ACTIVITY BREAKDOWN</span><h2>ข้อมูลแยกคลินิก</h2></div></div>
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div class="table-shell" role="region" aria-label="ตารางข้อมูลบริการแยกคลินิก เลื่อนแนวนอนได้" tabindex="0"><table class="volume-table"><thead><tr><th>คลินิก</th><th>รหัส</th>{#each [2565,2566,2567,2568] as y}<th>{y}</th>{/each}<th>2569 VISIT</th><th>2569 HN</th></tr></thead><tbody>
         {#each data.workload as item (item.code)}<tr><td class="name-cell">{item.name}</td><td>{item.code}</td>{#each [2565,2566,2567,2568] as y}<td class="number-cell">{num(item.historical[String(y)],0)}</td>{/each}<td class="number-cell">{num(item.visits2569,0)}</td><td class="number-cell">{num(item.uniqueHn2569,0)}</td></tr>{/each}
@@ -265,23 +260,8 @@
       <div class="section-heading"><div><span class="section-kicker">PATIENT EXPERIENCE</span><h2>คุณภาพและประสบการณ์บริการ <span class="muted">พ.ศ. {year}</span></h2></div></div>
       <div class="kpi-grid experience-kpis"><div class="kpi mint"><div class="kpi-label"><span>ความพึงพอใจ</span><div class="icon-circle"><Smile size={21}/></div></div><strong>{num(getValue(data.experience[0],year))}<span>%</span></strong><p>เป้าหมาย ≥ 80%</p></div><div class="kpi peach"><div class="kpi-label"><span>Cycle Time</span><div class="icon-circle"><Clock3 size={21}/></div></div><strong>{num(getValue(data.experience[1],year),0)}<span> นาที</span></strong><p>เป้าหมาย 90 นาที</p></div></div>
       <div class="chart-grid"><section class="panel"><div class="panel-heading"><div><span class="panel-badge mint-text">SATISFACTION</span><h3>แนวโน้มความพึงพอใจ</h3><p>หน่วยร้อยละ • ยิ่งสูงยิ่งดี</p></div></div><EChart option={trendOption(data.experience[0])} label="แนวโน้มความพึงพอใจ" height={290}/></section><section class="panel"><div class="panel-heading"><div><span class="panel-badge violet-text">CYCLE TIME</span><h3>แนวโน้มระยะเวลาบริการ</h3><p>หน่วยนาที • ยิ่งต่ำยิ่งดี</p></div></div><EChart option={trendOption(data.experience[1])} label="แนวโน้ม Cycle Time" height={290}/></section></div>
-      <div class="info-note"><Info size={19}/><p>Cycle Time ใน Excel ระบุเป้าหมายเพียง 90 นาที ไม่มีเครื่องหมายเปรียบเทียบ จึงตีความเบื้องต้นว่า “ไม่เกิน 90 นาที” และต้องยืนยันนิยามจุดเริ่มต้น/สิ้นสุดและเกณฑ์การผ่านก่อนใช้ตัดสินผลทางการ</p></div>
-    {:else}
-      <div class="section-heading"><div><span class="section-kicker">DATA GOVERNANCE</span><h2>ที่มา นิยาม และข้อจำกัดของข้อมูล</h2></div></div>
-      <div class="method-grid">
-        <article class="method-card"><div class="method-icon mint"><Database size={23}/></div><h3>แหล่งข้อมูล</h3><p>ข้อมูลจาก Excel ที่หน่วยงานจัดส่ง: <strong>{data.metadata.source}</strong> ใช้เป็นภาพรวมตามช่วงปีในไฟล์ ไม่ใช่การดึงสดจาก HIS</p></article>
-        <article class="method-card"><div class="method-icon blue"><ClipboardCheck size={23}/></div><h3>กติกาประเมินเกณฑ์</h3><p>เปรียบเทียบตามเครื่องหมาย &gt;, &lt;, ≥, ≤ และ = ที่กำหนดไว้จริง ไม่ปัดเศษก่อนตัดสินสถานะ ตัวชี้วัดไม่มีเกณฑ์แยกเป็น “ไม่มีเกณฑ์”</p></article>
-        <article class="method-card"><div class="method-icon lilac"><ShieldCheck size={23}/></div><h3>ความเป็นส่วนตัว</h3><p>เวอร์ชันเว็บไซต์ใช้เฉพาะสถิติสรุป ไม่บรรจุชื่อ HN, CID, วันเกิด หรือผลตรวจผู้ป่วยรายบุคคล และไม่เชื่อมต่อฐานข้อมูลโรงพยาบาล</p></article>
-        <article class="method-card"><div class="method-icon peach"><CalendarDays size={23}/></div><h3>ปีงบประมาณและการอัปเดต</h3><p>แสดงปี พ.ศ. ตามที่ปรากฏในไฟล์ Excel แหล่งข้อมูลยังไม่มีวันปิดงวดแน่ชัด ต้องตรวจสอบก่อนเรียกข้อมูลปี 2569 ว่าเป็นข้อมูลครบปี</p></article>
-      </div>
-      <div class="info-note"><Info size={19}/><p>ส่วนเพิ่มเติม COPD วันที่ 29 ต.ค. 2569 อ้างอิงภาพหัวตารางและแถว 28–29 ที่ผู้ใช้จัดส่ง: ผลจริงอยู่ปี 2564–2567; เครื่องหมาย &lt;30% และ ≥90% เป็นเกณฑ์/เป้าหมาย ไม่ใช่ผลจริง ส่วนแผนปี 2573–2574 ยังไม่ระบุ และไม่มีการคาดการณ์เพิ่ม</p></div>
-      <div class="info-note caution"><AlertCircle size={20}/><div><strong>DM Remission ยังไม่รวมในข้อมูลเผยแพร่</strong><p>ไฟล์ DM Remission เป็นข้อมูลระดับรายบุคคลและยังต้องตรวจสอบข้อมูลซ้ำ นิยามทางคลินิก และการเปิดเผยกลุ่มย่อย จึงไม่นำข้อมูลชุดนั้นเข้าสู่ ChatGPT Sites ฉบับนี้</p></div></div>
-      <div class="info-note"><Info size={19}/><p>ข้อมูลย้อนหลังปี 2565–2568 ในชีตปริมาณงานยังไม่มีคำยืนยันชัดเจนว่าหน่วยนับตรงกับ VISIT ในปี 2569 และ HN นับไม่ซ้ำภายในคลินิก ไม่ใช่จำนวนผู้ป่วยไม่ซ้ำข้ามคลินิก</p></div>
     {/if}
 
-    {#if page !== 'method'}
-      <div class="data-caveat"><Info size={18}/><div><strong>เกี่ยวกับข้อมูล</strong><span>นี่คือข้อมูลสรุปจาก Excel ไม่ใช่ข้อมูล real-time และไม่ได้ใช้เพื่อการวินิจฉัยผู้ป่วยรายบุคคล รายละเอียดเกณฑ์และข้อจำกัดอยู่ในหน้า <button onclick={()=>go('method')}>คำอธิบายข้อมูล <ArrowUpRight size={13}/></button></span></div></div>
-    {/if}
     <footer><span>© 2569 CLINIC M370 SMART CARE DASHBOARD</span><span><HeartPulse size={14}/> Made with care • ข้อมูลสรุปเท่านั้น</span></footer>
   </main>
 </div>

@@ -1,9 +1,9 @@
 import { counts, coverageOption, donutOption, getValue, isPass, latestYear, num, palette, years, type Metric, type Page as DashboardPage } from './dashboard';
 
-export type Page = DashboardPage | 'remission';
+export type Page = Exclude<DashboardPage, 'method'> | 'remission';
 
 export type StatusFilter = 'all' | 'fail' | 'pass';
-const pages: Page[] = ['overview', 'dm', 'copd', 'workload', 'experience', 'method', 'remission'];
+const pages: Page[] = ['overview', 'dm', 'copd', 'workload', 'experience', 'remission'];
 
 export function readView(search: string): { page: Page; year: number } {
   const params = new URLSearchParams(search);
