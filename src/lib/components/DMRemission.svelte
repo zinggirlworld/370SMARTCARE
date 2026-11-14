@@ -15,7 +15,7 @@
 <section class="remission" aria-labelledby="remission-title">
   <div class="section-heading"><div><span class="section-kicker">DM REMISSION FOLLOW-UP</span><h2 id="remission-title">ติดตาม DM Remission <span class="muted">ปีงบประมาณ {summary.fiscalYear}</span></h2></div><span class="panel-chip">ข้อมูลเฉพาะปี 2569</span></div>
   <div class="kpi-grid">
-    {#each cards as card}<div class={`kpi ${card.theme}`}><div class="kpi-label"><span>{card.label}</span><div class="icon-circle"><card.icon size={20}/></div></div><strong>{card.value}<span> รายการ</span></strong><p>{card.detail}</p></div>{/each}
+    {#each cards as card}<div class={`kpi ${card.theme}`}><div class="kpi-label"><span>{card.label}</span><div class="icon-circle"><card.icon size={20}/></div></div><strong>{card.value}<span class="kpi-unit">รายการ</span></strong><p>{card.detail}</p></div>{/each}
   </div>
   <section class="panel" aria-labelledby="remission-chart-title">
     <div class="panel-heading"><div><span class="panel-badge mint-text">FOLLOW-UP STATUS</span><h3 id="remission-chart-title">สถานะการติดตาม 7 กลุ่ม</h3><p>ร้อยละของ {summary.totalRecords} รายการทั้งหมด • ทุกแถวมีสถานะเดียว</p></div></div>
@@ -45,6 +45,7 @@
 
 <style>
   .remission { min-width:0; }
+  .kpi-unit { margin-inline-start: 0.25em; }
   figure { margin:0; }
   .bars { display:grid; gap:18px; padding:12px 0; }
   .bar-row { display:grid; grid-template-columns:minmax(170px,1fr) minmax(100px,2fr) 125px; align-items:center; gap:14px; font-size:14px; }
