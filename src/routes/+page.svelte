@@ -132,7 +132,7 @@
 </script>
 
 <svelte:head>
-  <title>CLINIC M370 SMART CARE DASHBOARD | Nakornping Hospital</title>
+  <title>{currentNav.title} | CLINIC M370 SMART CARE DASHBOARD</title>
   <meta name="description" content="ระบบข้อมูลอัจฉริยะเพื่อการติดตามและดูแลผู้ป่วยโรคเรื้อรัง — Dashboard สรุปตัวชี้วัด DM, COPD และคุณภาพบริการ" />
 </svelte:head>
 
@@ -170,7 +170,7 @@
       <div class="crumb"><House size={15}/><span>Smart Care</span><ChevronRight size={13}/><strong>{currentNav.title}</strong></div>
       <div class="top-actions">
         <label class="year-control"><CalendarDays size={16}/><span>ปีงบประมาณ</span>
-          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='remission'} value={page==='remission'?2569:year} onchange={(e)=>changeYear(Number(e.currentTarget.value))}>
+          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='remission'} value={page==='remission'||page==='workload'?2569:year} onchange={(e)=>changeYear(Number(e.currentTarget.value))}>
             {#each years as y}<option value={y}>{y}</option>{/each}
           </select>
         </label>
@@ -217,7 +217,7 @@
       </div>
       
       {#if page==='copd'}
-        <div class="info-note copd-source-note"><Info size={19}/><p>เพิ่ม 2 ตัวชี้วัดจากภาพตารางที่ส่งวันที่ 29 ต.ค. 2569 มีผลจริงปี 2564–2567 ส่วนปี 2568–2569 ยังไม่มีผลจริง จึงแสดง “—” และไม่นับเป็นผ่านหรือไม่ผ่านเกณฑ์</p></div>
+        <div class="info-note copd-source-note"><Info size={19}/><p>ตัวชี้วัดเพิ่มเติม 2 รายการมีผลปี 2564–2567 ส่วนปี 2568–2569 ยังไม่มีข้อมูลผลลัพธ์ จึงไม่ประเมินผ่านหรือไม่ผ่านเกณฑ์</p></div>
       {/if}
       <div class="section-heading tighter"><div><span class="section-kicker">DATA TABLE</span></div><label class="searchbox"><Search size={17}/><input aria-label="ค้นหาตัวชี้วัด" placeholder="ค้นหาตัวชี้วัด..." bind:value={search}/></label></div>
       <div class="indicator-toolbar">
@@ -239,12 +239,12 @@
       </tbody></table>{#if filteredRows.length===0}<p class="empty-state">ไม่พบตัวชี้วัดที่ค้นหา</p>{/if}</div>
       {#if page==='copd'}
         <section class="copd-plan" aria-labelledby="copd-plan-heading">
-          <div class="section-heading"><div><span class="section-kicker">STRATEGIC TARGETS · 2570–2574</span><h2 id="copd-plan-heading">ค่าเป้าหมายจากการพยากรณ์</h2><p class="muted-note">เฉพาะ 2 ตัวชี้วัดที่เพิ่มจากภาพ • เป็นเป้าหมาย ไม่ใช่ผลการดำเนินงาน</p></div><span class="panel-chip">แผนยุทธศาสตร์โรงพยาบาล</span></div>
+          <div class="section-heading"><div><span class="section-kicker">STRATEGIC TARGETS · 2570–2574</span><h2 id="copd-plan-heading">ค่าเป้าหมายจากการพยากรณ์</h2><p class="muted-note">เป้าหมายสำหรับ 2 ตัวชี้วัดเพิ่มเติม ไม่ใช่ผลการดำเนินงาน</p></div><span class="panel-chip">แผนยุทธศาสตร์โรงพยาบาล</span></div>
           <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-          <div class="table-shell copd-plan-table" role="region" aria-label="ตารางเป้าหมาย COPD ปี 2570 ถึง 2574 เลื่อนแนวนอนได้" tabindex="0"><table><caption>เป้าหมายปี 2570–2574 ตามภาพที่ส่งมา ช่องที่ไม่ระบุแสดง “—”</caption><thead><tr><th scope="col">ตัวชี้วัด</th>{#each copdAddition.planningYears as planningYear}<th scope="col">พ.ศ. {planningYear}</th>{/each}</tr></thead><tbody>
+          <div class="table-shell copd-plan-table" role="region" aria-label="ตารางเป้าหมาย COPD ปี 2570 ถึง 2574 เลื่อนแนวนอนได้" tabindex="0"><table><caption>เป้าหมายปี 2570–2574 โดยแสดง “—” เมื่อไม่มีค่าที่กำหนด</caption><thead><tr><th scope="col">ตัวชี้วัด</th>{#each copdAddition.planningYears as planningYear}<th scope="col">พ.ศ. {planningYear}</th>{/each}</tr></thead><tbody>
             {#each copdPlanningRows as row (row.metric.id)}<tr><th scope="row" class="name-cell">{row.metric.name}</th>{#each copdAddition.planningYears as planningYear}<td class="number-cell">{row.targets[String(planningYear)] ?? '—'}</td>{/each}</tr>{/each}
           </tbody></table></div>
-          <p class="copd-plan-note"><Info size={16}/> ปี 2573–2574 ยังไม่ระบุค่าในภาพ จึงไม่คาดการณ์หรือเติมเป้าหมายต่อเอง</p>
+          <p class="copd-plan-note"><Info size={16}/> ปี 2573–2574 ยังไม่มีค่าเป้าหมายที่ระบุไว้</p>
         </section>
       {/if}
     {:else if page==='workload'}
