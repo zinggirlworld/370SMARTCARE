@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ClipboardCheck, UsersRound, HeartHandshake, Info, UserRoundMinus } from 'lucide-svelte';
+  import { ClipboardCheck, UsersRound, HeartHandshake, UserRoundMinus } from 'lucide-svelte';
   import summary from '$lib/data/dm-remission.json';
   const stopped = summary.statuses.find(s => s.id === 'stopped')!.count;
   const exited = summary.statuses.filter(s => ['lost', 'transferred'].includes(s.id)).reduce((sum, s) => sum + s.count, 0);
@@ -13,8 +13,7 @@
 </script>
 
 <section class="remission" aria-labelledby="remission-title">
-  <div class="section-heading"><div><span class="section-kicker">DM REMISSION FOLLOW-UP</span><h2 id="remission-title">ติดตาม DM Remission <span class="muted">ปีงบประมาณ {summary.fiscalYear}</span></h2><p class="muted-note">ข้อมูลสรุปสถานะการติดตามจากทะเบียน • หน่วยนับ: รายการ</p></div><span class="panel-chip">ข้อมูลเฉพาะปี 2569</span></div>
-  <aside class="data-notice" aria-label="ข้อควรทราบในการอ่านข้อมูล"><Info size={22}/><div><strong>สถานะหยุดยาไม่เท่ากับการยืนยัน DM Remission</strong><p>พบรหัสผู้ป่วยซ้ำ {summary.duplicateIdentifierExcess} รายการ จึงใช้ยอดตามทะเบียนและไม่ตีความยอดรวมเป็นจำนวนผู้ป่วยไม่ซ้ำ ข้อมูลชุดนี้ยังไม่ยืนยันผล remission ทางคลินิก</p></div></aside>
+  <div class="section-heading"><div><span class="section-kicker">DM REMISSION FOLLOW-UP</span><h2 id="remission-title">ติดตาม DM Remission <span class="muted">ปีงบประมาณ {summary.fiscalYear}</span></h2></div><span class="panel-chip">ข้อมูลเฉพาะปี 2569</span></div>
   <div class="kpi-grid">
     {#each cards as card}<div class={`kpi ${card.theme}`}><div class="kpi-label"><span>{card.label}</span><div class="icon-circle"><card.icon size={20}/></div></div><strong>{card.value}<span> รายการ</span></strong><p>{card.detail}</p></div>{/each}
   </div>
@@ -46,9 +45,6 @@
 
 <style>
   .remission { min-width:0; }
-  .data-notice { display:flex; gap:12px; padding:18px; margin-bottom:20px; background:#fff7e8; color:#70421b; border:1px solid #ebcd9e; border-radius:18px; }
-  .data-notice :global(svg) { flex-shrink:0; }
-  .data-notice p { margin:6px 0 0; line-height:1.7; }
   figure { margin:0; }
   .bars { display:grid; gap:18px; padding:12px 0; }
   .bar-row { display:grid; grid-template-columns:minmax(170px,1fr) minmax(100px,2fr) 125px; align-items:center; gap:14px; font-size:14px; }
@@ -71,6 +67,5 @@
     .bar-track { grid-row:2; grid-column:1 / -1; }
     .bar-axis { margin:0; }
     th,td { padding:12px 8px; font-size:13px; }
-    .data-notice { padding:14px; }
   }
 </style>
