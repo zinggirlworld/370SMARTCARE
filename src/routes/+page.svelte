@@ -10,9 +10,11 @@
   import {
     data, years, latestYear, counts, getValue, isPass, num,
     trendOption, workloadOption,
-    type Metric, type Page
+    type Metric
   } from '$lib/dashboard';
-  import { coverageWithValues, donutWithSummary, matchesStatus, metricStatus, readView, viewUrl, type StatusFilter } from '$lib/ux';
+  import { coverageWithValues, donutWithSummary, matchesStatus, metricStatus, readView, viewUrl, type StatusFilter, type Page } from '$lib/ux';
+
+  import DMRemission from '$lib/components/DMRemission.svelte';
 
   import copdAddition from '$lib/data/copd-additions-source.json';
   const copdPlanningRows = copdAddition.rows.map(row => ({
@@ -27,7 +29,8 @@
     { page:'copd', title:'โรคปอด COPD', kicker:'Respiratory' },
     { page:'workload', title:'ปริมาณงานบริการ', kicker:'Service volume' },
     { page:'experience', title:'คุณภาพบริการ', kicker:'Experience' },
-    { page:'method', title:'คำอธิบายข้อมูล', kicker:'Data governance' }
+    { page:'method', title:'คำอธิบายข้อมูล', kicker:'Data governance' },
+    { page:'remission', title:'ติดตาม DM Remission', kicker:'DM Remission' }
   ];
   const highlightDM = [data.dm[1], data.dm[5], data.dm[6], data.dm[8]];
   let page = $state<Page>('overview');
@@ -152,6 +155,7 @@
             {:else if item.page==='copd'}<Wind size={19}/>
             {:else if item.page==='workload'}<Stethoscope size={19}/>
             {:else if item.page==='experience'}<HeartHandshake size={19}/>
+            {:else if item.page==='remission'}<ClipboardCheck size={19}/>
             {:else}<BookOpenText size={19}/>{/if}
           </span>
           {#if !compactNav}<span class="nav-text"><strong>{item.title}</strong><small>{item.kicker}</small></span><ChevronRight size={16} class="nav-chevron"/>{/if}
@@ -171,7 +175,7 @@
       <div class="crumb"><House size={15}/><span>Smart Care</span><ChevronRight size={13}/><strong>{currentNav.title}</strong></div>
       <div class="top-actions">
         <label class="year-control"><CalendarDays size={16}/><span>ปีงบประมาณ</span>
-          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='method'} value={year} onchange={(e)=>changeYear(Number(e.currentTarget.value))}>
+          <select aria-label="เลือกปีงบประมาณ" disabled={page==='workload'||page==='method'||page==='remission'} value={page==='remission'?2569:year} onchange={(e)=>changeYear(Number(e.currentTarget.value))}>
             {#each years as y}<option value={y}>{y}</option>{/each}
           </select>
         </label>
@@ -207,6 +211,8 @@
         <button class="quick-card lilac" onclick={()=>go('workload')}><span class="quick-icon"><Stethoscope size={22}/></span><strong>ปริมาณงานบริการ</strong><span>14 คลินิก/บริการ • VISIT และ HN แยกหน่วย</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
         <button class="quick-card peach" onclick={()=>go('experience')}><span class="quick-icon"><HeartHandshake size={22}/></span><strong>คุณภาพบริการ</strong><span>ความพึงพอใจและ Cycle Time</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
       </div>
+    {:else if page==='remission'}
+      <DMRemission />
     {:else if page==='dm'||page==='copd'}
       <div class="section-heading"><div><span class="section-kicker">QUALITY INDICATORS</span><h2>{page==='dm'?'ตัวชี้วัดโรคเบาหวาน':'ตัวชี้วัดโรคปอดอุดกั้นเรื้อรัง'} <span class="muted">พ.ศ. {year}</span></h2></div><span class="section-context">ผลรวมการประเมินตามเกณฑ์ต้นทาง</span></div>
       <div class="mini-stats">

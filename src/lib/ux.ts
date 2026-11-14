@@ -1,7 +1,9 @@
-import { counts, coverageOption, donutOption, getValue, isPass, latestYear, num, palette, years, type Metric, type Page } from './dashboard';
+import { counts, coverageOption, donutOption, getValue, isPass, latestYear, num, palette, years, type Metric, type Page as DashboardPage } from './dashboard';
+
+export type Page = DashboardPage | 'remission';
 
 export type StatusFilter = 'all' | 'fail' | 'pass';
-const pages: Page[] = ['overview', 'dm', 'copd', 'workload', 'experience', 'method'];
+const pages: Page[] = ['overview', 'dm', 'copd', 'workload', 'experience', 'method', 'remission'];
 
 export function readView(search: string): { page: Page; year: number } {
   const params = new URLSearchParams(search);
@@ -9,14 +11,14 @@ export function readView(search: string): { page: Page; year: number } {
   const candidateYear = Number(params.get('year'));
   return {
     page: pages.includes(candidatePage) ? candidatePage : 'overview',
-    year: years.includes(candidateYear) ? candidateYear : latestYear
+    year: candidatePage === 'remission' ? 2569 : years.includes(candidateYear) ? candidateYear : latestYear
   };
 }
 
 export function viewUrl(current: URL, page: Page, year: number): URL {
   const url = new URL(current);
   url.searchParams.set('page', page);
-  url.searchParams.set('year', String(year));
+  url.searchParams.set('year', String(page === 'remission' ? 2569 : year));
   return url;
 }
 

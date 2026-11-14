@@ -28,7 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Verify data
-        run: npm run verify:data
+        run: npm run verify
+      - name: Verify Sites compatibility and regression
+        run: npm run verify-sites
       - name: Check Svelte and TypeScript
         run: npm run check
       - name: Build static dashboard

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "fiscalYear": 2569,
+  "source": {
+    "sheet": "สรุปงบ 69",
+    "sha256": "d7d7f06b4f60cac76f692657def7a5428fdb08729a92b4b37115c3f46a835508",
+    "summaryRow": 99,
+    "snapshotDate": null
+  },
+  "unit": "รายการ",
+  "totalRecords": 89,
+  "remainingRecords": 63,
+  "duplicateIdentifierExcess": 1,
+  "numericHba1cRecords": 63,
+  "confirmedRemissionRecords": null,
+  "statuses": [
+    {
+      "id": "stopped",
+      "label": "หยุดยา>3เดือน",
+      "count": 8
+    },
+    {
+      "id": "same",
+      "label": "ยาขนาดเท่าเดิม",
+      "count": 34
+    },
+    {
+      "id": "none",
+      "label": "ไม่มียา",
+      "count": 2
+    },
+    {
+      "id": "reduced",
+      "label": "ลดยา",
+      "count": 13
+    },
+    {
+      "id": "increased",
+      "label": "เพิ่มยา",
+      "count": 6
+    },
+    {
+      "id": "lost",
+      "label": "Loss FU",
+      "count": 8
+    },
+    {
+      "id": "transferred",
+      "label": "D/C ย้ายไปรักษาที่อื่น",
+      "count": 18
+    }
+  ]
+}
