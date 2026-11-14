@@ -43,3 +43,18 @@
 .copd-plan-table td { color:#7132a1; }
 .copd-plan-note { display:flex; align-items:flex-start; gap:7px; color:var(--muted); font-size:12px; margin:12px 2px; }
 .copd-plan-note svg { flex:none; margin-top:2px; }
+
+/* Five focus cards: balanced 3 + 2 desktop layout, without changing other grids. */
+.quick-grid-five { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.quick-grid-five > .quick-card { grid-column: span 2; }
+.quick-grid-five > .quick-card:nth-last-child(-n+2) { grid-column: span 3; }
+@media (max-width: 1100px) {
+  .quick-grid-five { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-grid-five > .quick-card,
+  .quick-grid-five > .quick-card:nth-last-child(-n+2) { grid-column: auto; }
+  .quick-grid-five > .quick-card:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 450px) {
+  .quick-grid-five { grid-template-columns: minmax(0, 1fr); }
+  .quick-grid-five > .quick-card:last-child { grid-column: auto; }
+}
