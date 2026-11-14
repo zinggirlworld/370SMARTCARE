@@ -18,21 +18,22 @@
     {#each cards as card}<div class={`kpi ${card.theme}`}><div class="kpi-label"><span>{card.label}</span><div class="icon-circle"><card.icon size={20}/></div></div><strong>{card.value}<span class="kpi-unit">รายการ</span></strong><p>{card.detail}</p></div>{/each}
   </div>
   <section class="panel" aria-labelledby="remission-chart-title">
-    <div class="panel-heading"><div><span class="panel-badge mint-text">FOLLOW-UP STATUS</span><h3 id="remission-chart-title">สถานะการติดตาม 7 กลุ่ม</h3><p>ร้อยละของ {summary.totalRecords} รายการทั้งหมด • ทุกแถวมีสถานะเดียว</p></div></div>
+    <div class="panel-heading"><div><span class="panel-badge mint-text">FOLLOW-UP STATUS</span><h3 id="remission-chart-title">สถานะการติดตาม 7 กลุ่ม</h3><p>ร้อยละของ {summary.totalRecords} รายการ • ไม่ใช่อัตรา DM Remission</p></div></div>
     <figure aria-describedby="remission-chart-caption">
       <div class="bars" role="img" aria-label="กราฟแท่งแนวนอนสถานะการติดตาม ค่าตัวเลขทั้งหมดอยู่ในตารางสรุปด้านล่าง">
         {#each summary.statuses as status}
           <div class="bar-row"><span>{status.label}</span><div class="bar-track"><div class="bar-fill" style={`width:${percent(status.count)}%`}></div></div><strong>{status.count} <small>({percent(status.count)}%)</small></strong></div>
         {/each}
-        <div class="bar-axis" aria-hidden="true"><span>0%</span><span>50%</span><span>100%</span></div>
+        <div class="bar-axis" aria-hidden="true"><span></span><div class="bar-axis-scale"><span>0%</span><span>50%</span><span>100%</span></div><span></span></div>
       </div>
-      <figcaption id="remission-chart-caption">แกนร้อยละ 0–100% ใช้ฐาน 89 รายการ ไม่ใช่อัตรา remission</figcaption>
+      <figcaption id="remission-chart-caption">แสดงสัดส่วนตามสถานะที่บันทึกในทะเบียน</figcaption>
     </figure>
   </section>
-  <div class="section-heading tighter"><div><span class="section-kicker">AGGREGATE SUMMARY</span><h3>ตารางสรุปสถานะ</h3></div></div>
+  <details class="remission-table-details"><summary>ดูข้อมูลแบบตาราง (7 สถานะ)</summary>
   <div class="table-shell"><table><caption>สถานะตามทะเบียน ปีงบประมาณ 2569 — ร้อยละคำนวณจาก 89 รายการ</caption><thead><tr><th scope="col">สถานะ</th><th scope="col">จำนวนรายการ</th><th scope="col">ร้อยละ</th></tr></thead><tbody>
     {#each summary.statuses as status}<tr><th scope="row">{status.label}</th><td class="number-cell">{status.count}</td><td class="number-cell">{percent(status.count)}%</td></tr>{/each}
   </tbody><tfoot><tr><th scope="row">รวม</th><td class="number-cell">{summary.totalRecords}</td><td class="number-cell">100.00%</td></tr></tfoot></table></div>
+  </details>
   <section class="panel limitations" aria-labelledby="remission-limitations"><h3 id="remission-limitations">แหล่งข้อมูลและข้อจำกัด</h3><ul>
     <li>อ้างอิงชีต “{summary.source.sheet}” ตารางสรุปแถว {summary.source.summaryRow} ตรวจยอดเทียบกับรายการต้นทางแล้ว โดยไม่แสดงข้อมูลรายบุคคล</li>
     <li>คงเหลือ 63 = 89 − Loss FU 8 − ย้ายการรักษา 18 รายการ ไม่ใช้ยอดนี้แทนจำนวนผู้ป่วยไม่ซ้ำ</li>
@@ -53,7 +54,12 @@
   .bar-fill { height:100%; background:#008576; border-radius:6px; }
   .bar-row strong { text-align:right; color:#25464b; }
   .bar-row small { font-size:12px; }
-  .bar-axis { display:flex; justify-content:space-between; margin-left:calc((100% - 153px)/3 + 14px); margin-right:139px; font-size:12px; color:#526676; }
+  .bar-axis { display:grid; grid-template-columns:minmax(170px,1fr) minmax(100px,2fr) 125px; gap:14px; font-size:12px; color:#526676; }
+  .bar-axis-scale { display:flex; justify-content:space-between; }
+  .remission-table-details { margin-top:18px; }
+  .remission-table-details summary { cursor:pointer; padding:14px 16px; border:1px solid #dce8ef; border-radius:14px; color:#254b62; font-weight:750; background:#f6fafc; }
+  .remission-table-details summary:focus-visible { outline:3px solid #267bea; outline-offset:2px; }
+  .remission-table-details .table-shell { margin-top:10px; }
   figcaption { margin:12px 0; color:#526676; font-size:13px; }
   table { width:100%; min-width:0; table-layout:fixed; }
   th:first-child { width:52%; overflow-wrap:anywhere; }
@@ -63,10 +69,11 @@
   .limitations { margin-top:24px; }
   .limitations ul { padding-left:22px; line-height:1.8; color:#41596a; }
   .limitations li + li { margin-top:8px; }
-  @media(max-width:740px) {
+  @media(max-width:900px) {
     .bar-row { grid-template-columns:minmax(0,1fr) auto; gap:8px; }
     .bar-track { grid-row:2; grid-column:1 / -1; }
-    .bar-axis { margin:0; }
+    .bar-axis { grid-template-columns:minmax(0,1fr); gap:0; }
+    .bar-axis > span { display:none; }
     th,td { padding:12px 8px; font-size:13px; }
   }
 </style>
