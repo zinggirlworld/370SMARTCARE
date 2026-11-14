@@ -200,11 +200,12 @@
         <section class="panel"><div class="panel-heading"><div><span class="panel-badge violet-text">02 / SCREENING</span><h3>ผลลัพธ์เทียบเป้าหมาย</h3><p>การติดตามและคัดกรองผู้ป่วยเบาหวาน</p></div><span class="panel-chip">%</span></div><EChart option={coverageWithValues(highlightDM,year)} label={`การคัดกรองเบาหวานเทียบเป้าหมาย ปี ${year}`} height={280}/></section>
       </div>
       <div class="section-heading tighter"><div><span class="section-kicker">FOCUS AREAS</span><h2>เจาะลึกตามกลุ่มงาน</h2></div></div>
-      <div class="quick-grid">
+      <div class="quick-grid quick-grid-five">
         <button class="quick-card mint" onclick={()=>go('dm')}><span class="quick-icon"><HeartPulse size={22}/></span><strong>เบาหวาน (DM)</strong><span>12 ตัวชี้วัด • ผลลัพธ์และภาวะแทรกซ้อน</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
         <button class="quick-card blue" onclick={()=>go('copd')}><span class="quick-icon"><Wind size={22}/></span><strong>โรคปอด COPD</strong><span>{data.copd.length} ตัวชี้วัด • สมรรถภาพปอด วัคซีน และการดูแล</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
         <button class="quick-card lilac" onclick={()=>go('workload')}><span class="quick-icon"><Stethoscope size={22}/></span><strong>ปริมาณงานบริการ</strong><span>14 คลินิก/บริการ • VISIT และ HN แยกหน่วย</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
         <button class="quick-card peach" onclick={()=>go('experience')}><span class="quick-icon"><HeartHandshake size={22}/></span><strong>คุณภาพบริการ</strong><span>ความพึงพอใจและ Cycle Time</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
+        <button class="quick-card mint" onclick={()=>go('remission')}><span class="quick-icon"><ClipboardCheck size={22}/></span><strong>ติดตาม DM Remission</strong><span>ปีงบประมาณ 2569 • สถานะการติดตาม 7 กลุ่ม</span><em class="quick-cta">ดูรายละเอียด <ChevronRight size={14}/></em><ArrowUpRight size={18}/></button>
       </div>
     {:else if page==='remission'}
       <DMRemission />
