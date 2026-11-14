@@ -216,9 +216,6 @@
         <div class="mini-stat neutral"><ClipboardCheck size={19}/><div><strong>{groupRows.length}</strong><span>ตัวชี้วัดทั้งหมด</span></div></div>
       </div>
       
-      {#if page==='copd'}
-        <div class="info-note copd-source-note"><Info size={19}/><p>ตัวชี้วัดเพิ่มเติม 2 รายการมีผลปี 2564–2567 ส่วนปี 2568–2569 ยังไม่มีข้อมูลผลลัพธ์ จึงไม่ประเมินผ่านหรือไม่ผ่านเกณฑ์</p></div>
-      {/if}
       <div class="section-heading tighter"><div><span class="section-kicker">DATA TABLE</span></div><label class="searchbox"><Search size={17}/><input aria-label="ค้นหาตัวชี้วัด" placeholder="ค้นหาตัวชี้วัด..." bind:value={search}/></label></div>
       <div class="indicator-toolbar">
         <div class="status-filters" role="group" aria-label="กรองตามสถานะตัวชี้วัด">
